@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox Script Injector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #2d1b69 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(255, 0, 150, 0.2) 0%, rgba(0, 255, 200, 0.2) 100%);
+            border: 2px solid #ff0096;
+            border-radius: 15px;
+            box-shadow: 0 0 40px rgba(255, 0, 150, 0.5);
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 40px rgba(255, 0, 150, 0.5); }
+            50% { box-shadow: 0 0 60px rgba(0, 255, 200, 0.5); }
+        }
+
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #ff0096, #00ffc8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 0, 150, 0.5);
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #ff0096;
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(255, 0, 150, 0.2);
+            transition: all 0.3s;
+        }
+
+        .panel:hover {
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 32px rgba(255, 0, 150, 0.4);
+            border-color: #00ffc8;
+        }
+
+        h2 {
+            color: #ff0096;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #00ffc8;
+            padding-bottom: 10px;
+            text-shadow: 0 0 10px #ff0096;
+        }
+
+        .login-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            color: #00ffc8;
+            font-weight: bold;
+            font-size: 0.95em;
+            text-shadow: 0 0 5px #00ffc8;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea,
+        select {
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #ff0096;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            background: rgba(255, 0, 150, 0.1);
+            border-color: #00ffc8;
+            box-shadow: 0 0 20px rgba(0, 255, 200, 0.5);
+        }
+
+        textarea {
+            height: 300px;
+            font-size: 0.9em;
+        }
+
+        button {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #ff0096 0%, #ff6ec7 100%);
+            border: none;
+            color: #000;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 20px rgba(255, 0, 150, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 0, 150, 0.6);
+            background: linear-gradient(135deg, #ff6ec7 0%, #ff0096 100%);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #00ffc8 0%, #00ffff 100%);
+            color: #000;
+        }
+
+        button.secondary:hover {
+            box-shadow: 0 8px 30px rgba(0, 255, 200, 0.6);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: #fff;
+        }
+
+        button.danger:hover {
+            box-shadow: 0 8px 30px rgba(255, 68, 68, 0.6);
+        }
+
+        .scripts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .script-card {
+            background: linear-gradient(135deg, rgba(255, 0, 150, 0.1) 0%, rgba(0, 255, 200, 0.1) 100%);
+            border: 2px solid #ff0096;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .script-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(255, 0, 150, 0.4);
+            border-color: #00ffc8;
+            background: linear-gradient(135deg, rgba(255, 0, 150, 0.2) 0%, rgba(0, 255, 200, 0.2) 100%);
+        }
+
+        .script-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00ffc8;
+            text-shadow: 0 0 10px #00ffc8;
+        }
+
+        .script-desc {
+            font-size: 0.9em;
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        .script-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .script-buttons button {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+
+        .user-info {
+            background: rgba(0, 255, 200, 0.1);
+            border: 2px solid #00ffc8;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .user-info h3 {
+            color: #00ffc8;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px #00ffc8;
+        }
+
+        .user-name {
+            font-size: 1.3em;
+            color: #ff0096;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ff0096;
+        }
+
+        .console {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ff0096;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 30px;
+        }
+
+        .console-line {
+            color: #00ffc8;
+            font-size: 0.9em;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+
+        .console-line.error {
+            color: #ff4444;
+        }
+
+        .console-line.success {
+            color: #00ff96;
+        }
+
+        .console-line.warning {
+            color: #ffaa00;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            border: 2px solid #ff0096;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(255, 0, 150, 0.5);
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff0096;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #00ffc8;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .scripts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #ff0096, #00ffc8);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #ff6ec7, #00ffff);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .status-online {
+            background: #00ff96;
+            color: #000;
+        }
+
+        .status-offline {
+            background: #ff4444;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💀 ROBLOX SCRIPT INJECTOR</h1>
+            <p class="subtitle">⚡ Script Manager & Executor ⚡</p>
+        </header>
+
+        <div class="main-grid">
+            <!-- Sidebar -->
+            <div class="panel">
+                <div id="loginPanel">
+                    <h2>🔐 התחברות</h2>
+                    <div class="input-group">
+                        <label>שם משתמש Roblox:</label>
+                        <input type="text" id="username" placeholder="Your Roblox username...">
+                    </div>
+                    <button onclick="login()">🚀 התחבר</button>
+                    <button class="secondary" onclick="guestLogin()" style="margin-top: 10px;">👤 אורח</button>
+                </div>
+
+                <div id="userPanel" style="display: none;">
+                    <div class="user-info">
+                        <h3>משתמש מחובר</h3>
+                        <div class="user-name" id="displayUsername"></div>
+                        <span class="status-badge status-online">🟢 במקוון</span>
+                    </div>
+                    <button onclick="logout()" class="danger" style="width: 100%; margin-bottom: 15px;">🚪 התנתקות</button>
+                    
+                    <h2 style="margin-top: 20px; font-size: 1.2em;">⚙️ הגדרות</h2>
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <label>בחר סקריפט:</label>
+                        <select id="scriptSelect" onchange="loadScript()">
+                            <option value="">בחר סקריפט...</option>
+                        </select>
+                    </div>
+                    <button class="secondary" onclick="showScriptModal()" style="width: 100%; margin-bottom: 15px;">➕ הוסף סקריפט חדש</button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="panel">
+                <h2>📚 סקריפטים זמינים</h2>
+                <div class="scripts-container" id="scriptsContainer">
+                    <div style="grid-column: 1/-1; text-align: center; padding: 30px; color: #888;">
+                        התחבר כדי לראות סקריפטים
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Console -->
+        <div class="console">
+            <h2>📺 קונסול</h2>
+            <div id="consoleOutput"></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="scriptModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeScriptModal()">&times;</span>
+            <h2>💻 עורך קוד</h2>
+            <div class="input-group">
+                <label>שם הסקריפט:</label>
+                <input type="text" id="newScriptName" placeholder="Enter script name...">
+            </div>
+            <div class="input-group">
+                <label>קוד הסקריפט:</label>
+                <textarea id="newScriptCode" placeholder="Paste your Roblox script here..." style="height: 300px;"></textarea>
+            </div>
+            <button onclick="saveCustomScript()" style="width: 100%; margin-top: 15px;">💾 שמור סקריפט</button>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        let currentUser = null;
+        let customScripts = JSON.parse(localStorage.getItem('customScripts')) || {};
+        
+        const defaultScripts = {
+            "aimbot": {
+                name: "🎯 Aimbot Script",
+                description: "Advanced aimbot for FPS games",
+                code: `-- Roblox Aimbot Script
+local camera = workspace.CurrentCamera
+local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer
+local mouse = localPlayer:GetMouse()
+
+print("✅ Aimbot loaded!")
+`
+            },
+            "esp": {
+                name: "👁️ ESP Wallhack",
+                description: "See through walls and locate players",
+                code: `-- ESP/Wallhack Script
+local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer
+
+for _, player in pairs(players:GetPlayers()) do
+    if player ~= localPlayer then
+        print("Player found: " .. player.Name)
+    end
+end
+print("✅ ESP activated!")
+`
+            },
+            "speed": {
+                name: "⚡ Speed Hack",
+                description: "Run faster than normal",
+                code: `-- Speed Hack Script
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character
+
+if character:FindFirstChild("Humanoid") then
+    character.Humanoid.WalkSpeed = 100
+    print("✅ Speed increased!")
+end
+`
+            },
+            "fly": {
+                name: "✈️ Flight Script",
+                description: "Fly around the map",
+                code: `-- Flight Script
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character
+local humanoid = character:WaitForChild("Humanoid")
+
+local flying = false
+local speed = 50
+
+print("✅ Flight script loaded!")
+print("Press F to toggle flight")
+`
+            },
+            "noclip": {
+                name: "👻 Noclip",
+                description: "Walk through walls",
+                code: `-- Noclip Script
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character
+
+for _, part in pairs(character:GetDescendants()) do
+    if part:IsA("BasePart") then
+        part.CanCollide = false
+    end
+end
+print("✅ Noclip enabled!")
+`
+            },
+            "admin": {
+                name: "👑 Admin Commands",
+                description: "Get admin commands",
+                code: `-- Admin Commands Script
+local player = game:GetService("Players").LocalPlayer
+local chat = game:GetService("Chat")
+
+print("✅ Admin commands loaded!")
+print("Commands: /kill, /kick, /ban, /teleport")
+`
+            },
+            "teleport": {
+                name: "🌍 Teleport",
+                description: "Teleport to players or locations",
+                code: `-- Teleport Script
+local player = game:GetService("Players").LocalPlayer
+local character = player.Character
+
+function teleportTo(targetPos)
+    character:MoveTo(targetPos)
+    print("✅ Teleported to " .. tostring(targetPos))
+end
+
+print("✅ Teleport system ready!")
+`
+            },
+            "infinite": {
+                name: "∞ Infinite Items",
+                description: "Duplicate items infinitely",
+                code: `-- Infinite Items Script
+local player = game:GetService("Players").LocalPlayer
+local backpack = player:WaitForChild("Backpack")
+
+print("✅ Item duplication active!")
+print("Items will multiply automatically")
+`
+            }
+        };
+
+        // Log to console
+        function log(message, type = 'normal') {
+            const console_el = document.getElementById('consoleOutput');
+            const time = new Date().toLocaleTimeString('he-IL');
+            const className = type === 'error' ? 'console-line error' : 
+                            type === 'success' ? 'console-line success' : 
+                            type === 'warning' ? 'console-line warning' : 'console-line';
+            
+            console_el.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            console_el.scrollTop = console_el.scrollHeight;
+        }
+
+        // Login
+        function login() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                log('❌ יש להזין שם משתמש', 'error');
+                return;
+            }
+
+            currentUser = username;
+            log(`✅ התחברת בהצלחה כ ${username}`, 'success');
+            updateUI();
+        }
+
+        // Guest Login
+        function guestLogin() {
+            currentUser = "Guest_" + Math.random().toString(36).substr(2, 9);
+            log(`✅ התחברת כאורח: ${currentUser}`, 'success');
+            updateUI();
+        }
+
+        // Logout
+        function logout() {
+            currentUser = null;
+            log('👋 התנתקת בהצלחה', 'warning');
+            updateUI();
+        }
+
+        // Update UI
+        function updateUI() {
+            const loginPanel = document.getElementById('loginPanel');
+            const userPanel = document.getElementById('userPanel');
+            const scriptsContainer = document.getElementById('scriptsContainer');
+
+            if (currentUser) {
+                loginPanel.style.display = 'none';
+                userPanel.style.display = 'block';
+                document.getElementById('displayUsername').textContent = currentUser;
+                renderScripts();
+            } else {
+                loginPanel.style.display = 'block';
+                userPanel.style.display = 'none';
+                scriptsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px; color: #888;">התחבר כדי לראות סקריפטים</div>';
+                document.getElementById('username').value = '';
+            }
+        }
+
+        // Render Scripts
+        function renderScripts() {
+            const container = document.getElementById('scriptsContainer');
+            const select = document.getElementById('scriptSelect');
+            
+            container.innerHTML = '';
+            select.innerHTML = '<option value="">בחר סקריפט...</option>';
+
+            const allScripts = { ...defaultScripts, ...customScripts };
+
+            for (const [key, script] of Object.entries(allScripts)) {
+                // Card
+                const card = document.createElement('div');
+                card.className = 'script-card';
+                card.innerHTML = `
+                    <div class="script-name">${script.name}</div>
+                    <div class="script-desc">${script.description}</div>
+                    <div class="script-buttons">
+                        <button onclick="executeScript('${key}')">▶️ הפעל</button>
+                        <button class="secondary" onclick="viewScript('${key}')">👀 צפה</button>
+                        ${customScripts[key] ? `<button class="danger" onclick="deleteScript('${key}')">🗑️</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(card);
+
+                // Select option
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = script.name;
+                select.appendChild(option);
+            }
+        }
+
+        // Execute Script
+        function executeScript(key) {
+            const scripts = { ...defaultScripts, ...customScripts };
+            const script = scripts[key];
+            
+            if (!script) {
+                log('❌ סקריפט לא נמצא', 'error');
+                return;
+            }
+
+            try {
+                log(`▶️ הפעלת סקריפט: ${script.name}`, 'normal');
+                
+                // Simulate execution
+                setTimeout(() => {
+                    log(`✅ סקריפט ${script.name} הופעל בהצלחה!`, 'success');
+                }, 500);
+            } catch (error) {
+                log(`❌ שגיאה: ${error.message}`, 'error');
+            }
+        }
+
+        // View Script
+        function viewScript(key) {
+            const scripts = { ...defaultScripts, ...customScripts };
+            const script = scripts[key];
+            
+            const modal = document.getElementById('scriptModal');
+            document.getElementById('newScriptName').value = script.name;
+            document.getElementById('newScriptCode').value = script.code;
+            document.getElementById('newScriptName').disabled = true;
+            
+            modal.classList.add('active');
+        }
+
+        // Show Script Modal
+        function showScriptModal() {
+            document.getElementById('newScriptName').value = '';
+            document.getElementById('newScriptCode').value = '';
+            document.getElementById('newScriptName').disabled = false;
+            document.getElementById('scriptModal').classList.add('active');
+        }
+
+        // Close Modal
+        function closeScriptModal() {
+            document.getElementById('scriptModal').classList.remove('active');
+        }
+
+        // Save Custom Script
+        function saveCustomScript() {
+            const name = document.getElementById('newScriptName').value.trim();
+            const code = document.getElementById('newScriptCode').value.trim();
+
+            if (!name || !code) {
+                log('❌ יש למלא את כל השדות', 'error');
+                return;
+            }
+
+            customScripts[name.toLowerCase().replace(/\s+/g, '_')] = {
+                name: name,
+                description: "Custom script",
+                code: code
+            };
+
+            localStorage.setItem('customScripts', JSON.stringify(customScripts));
+            log(`✅ סקריפט נשמר: ${name}`, 'success');
+            renderScripts();
+            closeScriptModal();
+        }
+
+        // Delete Script
+        function deleteScript(key) {
+            if (confirm('בטוח שאתה רוצה למחוק את הסקריפט?')) {
+                delete customScripts[key];
+                localStorage.setItem('customScripts', JSON.stringify(customScripts));
+                log(`🗑️ סקריפט נמחק`, 'warning');
+                renderScripts();
+            }
+        }
+
+        // Load Script
+        function loadScript() {
+            const key = document.getElementById('scriptSelect').value;
+            if (key) {
+                viewScript(key);
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('scriptModal');
+            if (event.target === modal) {
+                closeScriptModal();
+            }
+        }
+
+        // Initialize
+        log('🚀 Roblox Script Injector מחובר!', 'success');
+        log('👋 ברוכים הבאים!', 'normal');
+    </script>
+</body>
+</html>
