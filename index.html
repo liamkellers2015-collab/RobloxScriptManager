@@ -390,7 +390,6 @@
                         <input type="text" id="username" placeholder="Your Roblox username...">
                     </div>
                     <button onclick="login()">🚀 התחבר</button>
-                    <button class="secondary" onclick="guestLogin()" style="margin-top: 10px;">👤 אורח</button>
                 </div>
 
                 <div id="userPanel" style="display: none;">
@@ -476,13 +475,6 @@
 
             currentUser = username;
             log(`✅ התחברת בהצלחה כ ${username}`, 'success');
-            updateUI();
-        }
-
-        // Guest Login
-        function guestLogin() {
-            currentUser = "Guest_" + Math.random().toString(36).substr(2, 9);
-            log(`✅ התחברת כאורח: ${currentUser}`, 'success');
             updateUI();
         }
 
