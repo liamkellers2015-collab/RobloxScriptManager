@@ -250,6 +250,34 @@
             color: #ff0096;
             font-weight: bold;
             text-shadow: 0 0 10px #ff0096;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verified-badge {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .users-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .user-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #ff0096;
+            border-radius: 10px;
+            color: #00ffc8;
+            font-weight: bold;
+            font-size: 1.05em;
         }
 
         .console {
@@ -407,7 +435,7 @@
                             <option value="">בחר סקריפט...</option>
                         </select>
                     </div>
-                    <button class="secondary" onclick="showScriptModal()" style="width: 100%; margin-bottom: 15px;">➕ הוסף סקריפט חדש</button>
+                    <button id="addScriptBtn" class="secondary" onclick="showScriptModal()" style="width: 100%; margin-bottom: 15px; display: none;">➕ הוסף סקריפט חדש</button>
                 </div>
             </div>
 
@@ -420,6 +448,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Users -->
+        <div class="panel" style="margin-bottom: 30px;">
+            <h2>👥 כל המשתמשים</h2>
+            <div class="users-list" id="usersList"></div>
         </div>
 
         <!-- Console -->
@@ -448,10 +482,19 @@
 
     <script>
         // Data
+        const ADMIN_USERNAME = "admin"; // שם המשתמש של האדמין (עם הוי הכחול)
         let currentUser = null;
+        let isAdmin = false;
+        let editingKey = null;
+        let knownUsers = JSON.parse(localStorage.getItem('knownUsers')) || [];
         let customScripts = JSON.parse(localStorage.getItem('customScripts')) || {};
-        
+
         const defaultScripts = {};
+
+        // Verified badge (blue check)
+        function verifiedBadge() {
+            return `<svg class="verified-badge" viewBox="0 0 24 24" role="img" aria-label="verified"><circle cx="12" cy="12" r="11" fill="#1DA1F2"/><path d="M7 12.4l3.2 3.2L17.2 8.8" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        }
 
         // Log to console
         function log(message, type = 'normal') {
@@ -474,6 +517,13 @@
             }
 
             currentUser = username;
+            isAdmin = username.toLowerCase() === ADMIN_USERNAME.toLowerCase();
+
+            if (!knownUsers.includes(username)) {
+                knownUsers.push(username);
+                localStorage.setItem('knownUsers', JSON.stringify(knownUsers));
+            }
+
             log(`✅ התחברת בהצלחה כ ${username}`, 'success');
             updateUI();
         }
@@ -481,6 +531,7 @@
         // Logout
         function logout() {
             currentUser = null;
+            isAdmin = false;
             log('👋 התנתקת בהצלחה', 'warning');
             updateUI();
         }
@@ -494,7 +545,8 @@
             if (currentUser) {
                 loginPanel.style.display = 'none';
                 userPanel.style.display = 'block';
-                document.getElementById('displayUsername').textContent = currentUser;
+                document.getElementById('displayUsername').innerHTML = currentUser + (isAdmin ? ' ' + verifiedBadge() : '');
+                document.getElementById('addScriptBtn').style.display = isAdmin ? 'block' : 'none';
                 renderScripts();
             } else {
                 loginPanel.style.display = 'block';
@@ -502,6 +554,7 @@
                 scriptsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 30px; color: #888;">התחבר כדי לראות סקריפטים</div>';
                 document.getElementById('username').value = '';
             }
+            renderUsers();
         }
 
         // Render Scripts
@@ -524,7 +577,8 @@
                     <div class="script-buttons">
                         <button onclick="executeScript('${key}')">▶️ הפעל</button>
                         <button class="secondary" onclick="viewScript('${key}')">👀 צפה</button>
-                        ${customScripts[key] ? `<button class="danger" onclick="deleteScript('${key}')">🗑️</button>` : ''}
+                        ${isAdmin ? `<button onclick="editScript('${key}')">✏️ ערוך</button>` : ''}
+                        ${isAdmin ? `<button class="danger" onclick="deleteScript('${key}')">🗑️</button>` : ''}
                     </div>
                 `;
                 container.appendChild(card);
@@ -564,6 +618,7 @@
             const scripts = { ...defaultScripts, ...customScripts };
             const script = scripts[key];
             
+            editingKey = null;
             const modal = document.getElementById('scriptModal');
             document.getElementById('newScriptName').value = script.name;
             document.getElementById('newScriptCode').value = script.code;
@@ -572,8 +627,22 @@
             modal.classList.add('active');
         }
 
+        // Edit Script (admin)
+        function editScript(key) {
+            const scripts = { ...defaultScripts, ...customScripts };
+            const script = scripts[key];
+            if (!script) return;
+
+            editingKey = key;
+            document.getElementById('newScriptName').value = script.name;
+            document.getElementById('newScriptCode').value = script.code;
+            document.getElementById('newScriptName').disabled = false;
+            document.getElementById('scriptModal').classList.add('active');
+        }
+
         // Show Script Modal
         function showScriptModal() {
+            editingKey = null;
             document.getElementById('newScriptName').value = '';
             document.getElementById('newScriptCode').value = '';
             document.getElementById('newScriptName').disabled = false;
@@ -595,7 +664,8 @@
                 return;
             }
 
-            customScripts[name.toLowerCase().replace(/\s+/g, '_')] = {
+            const key = editingKey || name.toLowerCase().replace(/\s+/g, '_');
+            customScripts[key] = {
                 name: name,
                 description: "Custom script",
                 code: code
@@ -603,18 +673,38 @@
 
             localStorage.setItem('customScripts', JSON.stringify(customScripts));
             log(`✅ סקריפט נשמר: ${name}`, 'success');
+            editingKey = null;
             renderScripts();
             closeScriptModal();
         }
 
-        // Delete Script
+        // Delete Script (admin)
         function deleteScript(key) {
             if (confirm('בטוח שאתה רוצה למחוק את הסקריפט?')) {
                 delete customScripts[key];
+                delete defaultScripts[key];
                 localStorage.setItem('customScripts', JSON.stringify(customScripts));
                 log(`🗑️ סקריפט נמחק`, 'warning');
                 renderScripts();
             }
+        }
+
+        // Render Users List
+        function renderUsers() {
+            const list = document.getElementById('usersList');
+            if (!list) return;
+
+            if (knownUsers.length === 0) {
+                list.innerHTML = '<div style="color: #888;">אין משתמשים עדיין</div>';
+                return;
+            }
+
+            list.innerHTML = knownUsers.map(user => `
+                <div class="user-row">
+                    <span>${user}</span>
+                    ${user.toLowerCase() === ADMIN_USERNAME.toLowerCase() ? verifiedBadge() : ''}
+                </div>
+            `).join('');
         }
 
         // Load Script
@@ -634,6 +724,7 @@
         }
 
         // Initialize
+        renderUsers();
         log('🚀 Roblox Script Injector מחובר!', 'success');
         log('👋 ברוכים הבאים!', 'normal');
     </script>
